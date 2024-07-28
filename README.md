@@ -35,7 +35,7 @@ git branch -M main
 git push -u origin main
 ```
 
-# Local Test : 
+# Local Test in Developers Laptop : 
 ## Test your project in your local machine 
 1. make sure your within in root directory of this project 
 3. execute the below command for to initialized to your project for strapi with typescript template-
@@ -90,6 +90,24 @@ docker images
 docker ps -a
 ```
 
+# Deploy to aws ecs-fargate from Developer Desktop through ECR : 
+## Prerequisite:
+1. aws cli should be configure with IAM user access 
+2. aws ECR should be create 
+3. aws ECS should be create 
 
+## step :
+1. Retrieve an authentication token and authenticate your Docker client to your registry. Use the AWS CLI:
+```
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 536984075386.dkr.ecr.ap-south-1.amazonaws.com
+```
+2. tag with aws  ecr image 
+```
+docker tag my-strapi-app:latest 536984075386.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
+```
+3. push to docker container 
+```
+docker push 536984075386.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
+```
 
 
