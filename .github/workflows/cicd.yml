@@ -43,5 +43,12 @@ jobs:
         ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment \
-          --task-definition $(aws ecs describe-task-definition --task-definition $ECS_SERVICE --region $AWS_REGION | jq --raw-output '.taskDefinition | .containerDefinitions[0].image = "'$ECR_REPOSITORY:$IMAGE_TAG'" | . | del(.taskDefinitionArn, .status, .revision, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' | aws ecs register-task-definition --region $AWS_REGION --cli-input-json file:///dev/stdin | jq --raw-output '.taskDefinition.taskDefinitionArn')
+        TASK_FAMILY=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --region $AWS_REGION | jq -r '.services[0].taskDefinition | split("/")[1] | split(":")[0]')
+        TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $TASK_FAMILY --region $AWS_REGION)
+        NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$ECR_REPOSITORY:$IMAGE_TAG" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .status, .revision, .requiresAttributes, .compatibilities)')
+        NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+          --region $AWS_REGION \
+          --cli-input-json "$NEW_TASK_DEFINITION" \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+        aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $NEW_TASK_DEF_ARN --force-new-deployment
