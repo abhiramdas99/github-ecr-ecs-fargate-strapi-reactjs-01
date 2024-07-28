@@ -28,10 +28,29 @@ git push -u origin main
 ## push an existing repository from the command line
 ```
 git init
+git add .
+git commit -m "1st commit"
 git remote add origin https://github.com/abhiramdas99/github-ecr-ecs-fargate-strapi-reactjs-01.git
 git branch -M main
 git push -u origin main
 ```
+
+# Initialize your project for strapi & test locally 1st time 
+1. make sure your within in root directory of this project 
+3. execute the below command for to initialized to your project for strapi with typescript template-
+```
+ npx create-strapi-app@latest . --template typescript --quickstart
+```
+4. install typescript dependencies
+```
+npm install --save-dev typescript @types/node @strapi/typescript-utils
+```
+5. Start the Strapi server in development mode
+```
+npm run develop
+```
+6. Checkout with the default url - http://localhost:1337/admin
+
 
 
 # 🚀 Getting started with Strapi
