@@ -90,7 +90,7 @@ docker images
 docker ps -a
 ```
 
-# Deploy to aws ecs-fargate from Developer Desktop through ECR : 
+# Manual deployment  to aws ecs-fargate from Developer Desktop through ECR : 
 ## Prerequisite:
 1. aws cli should be configure with IAM user access 
 2. aws ECR should be create 
@@ -155,4 +155,15 @@ docker push <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
 5. deployment configuration > task > Task definition > my-strapi-tf
 6. make sure the port no- 1337 should be  allow  to public  to access the fargate ecs
 
+
+#  Continues deployment (CD) on git push  
+1. Add the following secrets in github ( create new stage envirnment if it ask ):
+  - AWS_ACCESS_KEY_ID: Your AWS access key ID(check in .env file ).
+  - AWS_SECRET_ACCESS_KEY: Your AWS secret access key(check in .env file ).
+  - AWS_REGION: The AWS region where your resources are located(check in .env file ).
+  - ECR_REPOSITORY: The URI of your ECR repository(check in .env file ).
+  - ECS_CLUSTER: The name of your ECS cluster (check in .env file ).
+  - ECS_SERVICE: The name of your ECS service. (check in .env file )
+2. Create new cicd.yml file:
+  - 
 

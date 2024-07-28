@@ -1,0 +1,46 @@
+name: Build and Deploy to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to Amazon ECR
+      env:
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ vars.ECR_REPOSITORY }}
+
+    - name: Build and push Docker image
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+        ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      run: |
+        docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Deploy to ECS
+      env:
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+        ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+        ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment \
+          --task-definition $(aws ecs describe-task-definition --task-definition $ECS_SERVICE --region $AWS_REGION | jq --raw-output '.taskDefinition | .containerDefinitions[0].image = "'$ECR_REPOSITORY:$IMAGE_TAG'" | . | del(.taskDefinitionArn, .status, .revision, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' | aws ecs register-task-definition --region $AWS_REGION --cli-input-json file:///dev/stdin | jq --raw-output '.taskDefinition.taskDefinitionArn')
