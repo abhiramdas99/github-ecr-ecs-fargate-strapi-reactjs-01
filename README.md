@@ -13,7 +13,7 @@ This project is  complete demonstration to run a reactjs application using follo
 9. load balancer
 10. ci/cd pipeline 
 
-# how to initializing with Git 
+#  how to initializing with Git 
 
 ## create a new repository on the command line
 ```
@@ -35,7 +35,8 @@ git branch -M main
 git push -u origin main
 ```
 
-# Initialize your project for strapi & test locally 1st time 
+# Local Test : 
+## Test your project in your local machine 
 1. make sure your within in root directory of this project 
 3. execute the below command for to initialized to your project for strapi with typescript template-
 ```
@@ -50,67 +51,45 @@ npm install --save-dev typescript @types/node @strapi/typescript-utils
 npm run develop
 ```
 6. Checkout with the default url - http://localhost:1337/admin
+7. Press ctrl + c to terminate the application
 
-
-
-# 🚀 Getting started with Strapi
-
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
-
-### `develop`
-
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
-
+## Test your project through docker container 
+1. Create a docker file location:  file://./Dockerfile
+2. Create a .dockerignore file  location: file://./.dockerignore
+3. Build the docker image from this app
 ```
-npm run develop
-# or
-yarn develop
+docker build -t my-strapi-app .
 ```
-
-### `start`
-
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
+4. run your Strapi Docker container in detached mode
 ```
-npm run start
-# or
-yarn start
+docker run -d -p 1337:1337 --name my-strapi-container my-strapi-app
 ```
+5. Checkout with the default url - http://localhost:1337/admin
 
-### `build`
-
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
-
+## Important troubleshooting during Local test 
+1. make sure that, the port should be empty, and other software not used that. 
+- For window:
 ```
-npm run build
-# or
-yarn build
+netstat -an | find "1337"
 ```
-
-## ⚙️ Deployment
-
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
-
+- For Linux:
 ```
-yarn strapi deploy
+netstat -an | grep 1337
+```
+For mac:
+```
+lsof -i :1337
+```
+2. make sure container is running properly 
+- check the image create or not 
+```
+docker images 
+```
+- check the container is running or not 
+```
+docker ps -a
 ```
 
-## 📚 Learn more
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
 
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
