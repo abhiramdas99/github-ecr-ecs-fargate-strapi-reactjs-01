@@ -96,18 +96,63 @@ docker ps -a
 2. aws ECR should be create 
 3. aws ECS should be create 
 
-## step :
+## push to aws ecr :
 1. Retrieve an authentication token and authenticate your Docker client to your registry. Use the AWS CLI:
 ```
 aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 536984075386.dkr.ecr.ap-south-1.amazonaws.com
 ```
 2. tag with aws  ecr image 
 ```
-docker tag my-strapi-app:latest 536984075386.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
+docker tag my-strapi-app:latest <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
 ```
 3. push to docker container 
 ```
-docker push 536984075386.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
+docker push <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
 ```
+## IAM setup 
+- Create Task Execution role and provide permission:
+1. Navigate - IAM > Roles > Select trusted entity > type: AWS service
+2. User case - Elastic Container Service > Elastic Container Service Task
+3. Permissions policies 
+  - AmazonECSTaskExecutionRolePolicy
+  - AmazonRDSFullAccess
+  - AmazonS3FullAccess
+  - CloudWatchLogsFullAccess
+  - SecretsManagerReadWrite
+4. role name : ecsTaskExecutionRole
+
+## Cloudwatch setup 
+- Crate new log group to  catch the  ecs fargate logs 
+1. Cloudwatch > Logs > Log Groups 
+2. Create new log group as name : /ecs/my-strapi-tf + retention period- 1 week 
+
+## deploy to ecs fargate cluster ( devops task )
+- Create Task Definitions
+1. Task definition family name : my-strapi-tf 
+2. Launch type : AWS Fargate
+3. Operating system/Architecture : Linux / X86_64
+4. Task size : 1 vCPU +  2 GB memory 
+5. Task role : ecsTaskExecutionRole
+6. Container setup : 
+  - name : strapi 
+  - image uri : <AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/my-strapi:latest
+  - Essential container : Yes
+  - Private registry :  Yes 
+  - Port mapping : Container port - 1337 / tcp  ( Make sure container port should be same as mention in image) 
+  - resource allocation limit :  1 cpu +  1 gb memory hard limit 
+  - Environment : NA 
+7. Log Collection : 
+  - awslogs-group : /ecs/my-strapi-tf
+  - awslogs-region : ap-south-1
+  - awslogs-stream-prefix : ecs
+  - awslogs-create-group : true 
+
+- Create Cluster:
+1. Navigate - Amazon Elastic Container Service > Create cluster 
+2. cluster name -  my-strapi-cluster
+3. ecs > Clusters > my-strapi-cluster > Services
+4. Compute options > Launch type > Fargate > Latest
+5. deployment configuration > task > Task definition > my-strapi-tf
+6. make sure the port no- 1337 should be  allow  to public  to access the fargate ecs
 
 
